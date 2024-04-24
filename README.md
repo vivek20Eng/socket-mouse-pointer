@@ -1,7 +1,12 @@
 ![Project Status](https://img.shields.io/badge/Status-In%20Progress-yellow)
 
 ## Socket Web App
- ![Demo](./sceenshot/socket.mp4)
+
+ <video width="640" height="360" controls>
+  <source src="./sceenshot/socket.mp4" type="video/mp4">
+  Your browser does not support the video tag.
+</video>
+
 # Real-Time Collaborative Mouse Pointer Application
 
 Welcome to the Real-Time Collaborative Mouse Pointer Application! This application allows users to collaborate in real-time by sharing their names and seeing each other's mouse pointers move on the screen.
@@ -58,5 +63,5 @@ To get started with the development of the Real-Time Collaborative Mouse Pointer
     ```
 3. Start the development server:
     ```bash 
-        npm start
+    npm start
     ```
