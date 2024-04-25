@@ -1,10 +1,9 @@
 ![Project Status](https://img.shields.io/badge/Status-In%20Progress-yellow)
 
-![Demo](https://youtu.be/KxMaTZkxqqQ)
 ## Socket Web App
 
 [![Video Demo](https://img.youtube.com/vi/KxMaTZkxqqQ/0.jpg)](https://www.youtube.com/watch?v=KxMaTZkxqqQ)
-
+## [LIVE](socket-mouse-pointer.vercel.app)
 
  <video width="640" height="360" controls>
   <source src="./sceenshot/socket.mp4" type="video/mp4">
