@@ -3,7 +3,7 @@
 ## Socket Web App
 
 [![Video Demo](https://img.youtube.com/vi/KxMaTZkxqqQ/0.jpg)](https://www.youtube.com/watch?v=KxMaTZkxqqQ)
-## [LIVE](https://socket-mouse-pointer.vercel.app/)
+## [LIVE 👁️](https://socket-mouse-pointer.vercel.app/)
 
  <video width="640" height="360" controls>
   <source src="./sceenshot/socket.mp4" type="video/mp4">
