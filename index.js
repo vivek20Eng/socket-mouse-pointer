@@ -1,39 +1,60 @@
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
+
 const app = express();
 const server = http.createServer(app);
+
 const io = new Server(server);
 
 app.use(express.static("public"));
 
 app.get("/", (req, res) => {
-   res.sendFile("/index.html");
+  res.sendFile(__dirname + "/public/index.html");
 });
 
-const user = {};
+const users = {};
+
 io.on("connection", (socket) => {
-   socket.emit("fetch-users", user);
+  console.log("User Connected:", socket.id);
 
-   socket.on("new-user", (data) => {
-      const newUser = {
-         id: socket.id,
-         text: data.text,
-      };
-      user[socket.id] = newUser;
+  // Send existing users to new client
+  socket.emit("fetch-users", users);
 
-      io.emit("new-user", newUser);
-   });
+  // New user joined
+  socket.on("new-user", (data) => {
+    const newUser = {
+      id: socket.id,
+      text: data.text,
+    };
 
-   socket.on("mousemmove", (coordinates) => {
-      io.emit("mousemove", { coordinates, id: socket.id });
-   });
+    users[socket.id] = newUser;
 
-   socket.on("disconnect", () => {
-      delete user[socket.id];
-      io.emit("user-left", { id: socket.id });
-   });
+    io.emit("new-user", newUser);
+  });
+
+  // Mouse movement
+  socket.on("mousemove", (coordinates) => {
+    io.emit("mousemove", {
+      id: socket.id,
+      coordinates,
+    });
+  });
+
+  // User disconnected
+  socket.on("disconnect", () => {
+    console.log("User Disconnected:", socket.id);
+
+    delete users[socket.id];
+
+    io.emit("user-left", {
+      id: socket.id,
+    });
+  });
 });
 
 const PORT = process.env.PORT || 3000;
-server.listen(PORT, () => console.log(PORT));
+
+server.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
+});
