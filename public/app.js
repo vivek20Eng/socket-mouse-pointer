@@ -60,16 +60,21 @@ function showError(msg) {
    erroMsg.textContent = msg;
 }
 
+const socketOptions = { transports: ["websocket", "polling"] };
+const socketUrl = window.SOCKET_SERVER_URL || undefined;
+
 const socket =
    typeof io !== "undefined"
-      ? io({ transports: ["websocket", "polling"] })
+      ? socketUrl
+         ? io(socketUrl, socketOptions)
+         : io(socketOptions)
       : { connected: false, on() {}, emit() {} };
 
 if (typeof io === "undefined") {
    setConnectionState("disconnected", "Socket.io missing");
-   showError(
-      "Realtime server not available on this host. Deploy to Render/Railway or run: npm run dev"
-   );
+   showError("Socket.io client failed to load. Check your network or ad blocker.");
+} else if (socketUrl) {
+   setConnectionState("connecting", "Connecting to server…");
 }
 
 function updateOnlineBadge(count) {
@@ -152,9 +157,13 @@ socket.on("disconnect", () => {
 
 socket.on("connect_error", () => {
    setConnectionState("disconnected", "Server offline");
-   showError(
-      "Cannot reach realtime server. This app needs Node + WebSockets (use Render, Railway, or npm run dev — not static Vercel)."
-   );
+   if (socketUrl) {
+      showError(
+         `Cannot reach server at ${socketUrl}. Check Render is running and CORS_ORIGIN includes this site.`
+      );
+   } else {
+      showError("Cannot reach server. Run: npm run dev (local) or deploy backend to Render.");
+   }
 });
 
 socket.on("fetch-users", (users) => {

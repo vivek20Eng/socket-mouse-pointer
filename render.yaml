@@ -9,3 +9,5 @@ services:
     envVars:
       - key: NODE_VERSION
         value: "24"
+      - key: CORS_ORIGIN
+        value: "https://socket-mouse-pointer.vercel.app,https://socket-mouse-pointer-cbvs.vercel.app,http://localhost:3000"

@@ -49,21 +49,37 @@ The Real-Time Collaborative Mouse Pointer Application is a web-based application
 
 ## Demo / deployment
 
-**Socket.io needs a long-running Node server** (WebSockets). Plain Vercel static hosting will show `socket.io.js` 404 and `io is not defined`.
+| Where | Command / setup |
+|-------|------------------|
+| **Local** | `npm run dev` → http://localhost:3000 |
+| **Render only** | `npm start` — one URL, everything works |
+| **Vercel + Render** | UI on Vercel, Socket.io on Render (see below) |
 
-| Platform | Works? |
-|----------|--------|
-| Local `npm run dev` | Yes |
-| [Render](https://render.com) (use `render.yaml` in repo) | Yes — recommended |
-| Railway, Fly.io, VPS | Yes |
-| Vercel serverless only | No — use Render instead |
+### Option A — One URL on Render (simplest)
 
-### Deploy on Render (free)
+1. [Render Dashboard](https://dashboard.render.com) → **New** → **Blueprint** → connect this repo.
+2. Open your `https://….onrender.com` URL — cursors work.
 
-1. Push this repo to GitHub.
-2. [Render Dashboard](https://dashboard.render.com) → **New** → **Blueprint** → connect repo (uses `render.yaml`).
-3. Or **New Web Service** → Node → Build: `npm install` → Start: `npm start`.
-4. Set **Node 24** if asked. Open the Render URL (not Vercel) for the live app.
+### Option B — Vercel frontend + Render backend
+
+**Step 1 — Backend on Render**
+
+1. Deploy on Render (Blueprint or Web Service).
+2. **Start command:** `npm start` · **Node:** 24
+3. Copy your Render URL, e.g. `https://socket-mouse-pointer.onrender.com`
+
+**Step 2 — Frontend on Vercel**
+
+1. **Settings → Environment Variables** → add:
+   - `SOCKET_SERVER_URL` = your Render URL (no trailing slash)
+2. **Settings → General → Node.js Version** = **24.x**
+3. **Build Command:** `npm run build` (or leave default; `vercel.json` sets this)
+4. **Output Directory:** `public`
+5. Redeploy.
+
+Vercel builds `public/env.js` with your Render URL; the browser connects there for live cursors.
+
+**Render env (optional):** set `CORS_ORIGIN` to your Vercel URL(s), comma-separated.
 
 ## Getting Started
 

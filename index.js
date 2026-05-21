@@ -7,7 +7,13 @@ const app = express();
 const server = http.createServer(app);
 const publicDir = path.join(__dirname, "public");
 
-const io = new Server(server);
+const corsOrigin = process.env.CORS_ORIGIN
+  ? process.env.CORS_ORIGIN.split(",").map((s) => s.trim())
+  : true;
+
+const io = new Server(server, {
+  cors: { origin: corsOrigin, methods: ["GET", "POST"] },
+});
 
 app.use(express.static(publicDir));
 
@@ -78,10 +84,6 @@ io.on("connection", (socket) => {
 
 const PORT = process.env.PORT || 3000;
 
-if (!process.env.VERCEL) {
-  server.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
-}
-
-module.exports = server;
+server.listen(PORT, () => {
+  console.log(`Server running on http://localhost:${PORT}`);
+});
