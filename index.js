@@ -1,16 +1,18 @@
+const path = require("path");
 const express = require("express");
 const http = require("http");
 const { Server } = require("socket.io");
 
 const app = express();
 const server = http.createServer(app);
+const publicDir = path.join(__dirname, "public");
 
 const io = new Server(server);
 
-app.use(express.static("public"));
+app.use(express.static(publicDir));
 
 app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/public/index.html");
+  res.sendFile(path.join(publicDir, "index.html"));
 });
 
 const users = {};

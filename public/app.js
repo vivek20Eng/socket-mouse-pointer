@@ -4,7 +4,7 @@ import {
    createParentContainer,
    createMousePointer,
    createUsername,
-} from "./module.js";
+} from "/module.js";
 
 const joinPanel = document.getElementById("join-panel");
 const joinForm = document.getElementById("join-form");
