@@ -47,9 +47,23 @@ The Real-Time Collaborative Mouse Pointer Application is a web-based application
 - **Socket.io:** Real-time bidirectional event-based communication library for enabling real-time collaboration.
 - **HTML, CSS, JavaScript:** Frontend technologies for building the user interface and handling client-side logic.
 
-## Demo
+## Demo / deployment
 
-Check out a live demo of the Real-Time Collaborative Mouse Pointer Application [here](https://socket-mouse-pointer.vercel.app/).
+**Socket.io needs a long-running Node server** (WebSockets). Plain Vercel static hosting will show `socket.io.js` 404 and `io is not defined`.
+
+| Platform | Works? |
+|----------|--------|
+| Local `npm run dev` | Yes |
+| [Render](https://render.com) (use `render.yaml` in repo) | Yes — recommended |
+| Railway, Fly.io, VPS | Yes |
+| Vercel serverless only | No — use Render instead |
+
+### Deploy on Render (free)
+
+1. Push this repo to GitHub.
+2. [Render Dashboard](https://dashboard.render.com) → **New** → **Blueprint** → connect repo (uses `render.yaml`).
+3. Or **New Web Service** → Node → Build: `npm install` → Start: `npm start`.
+4. Set **Node 24** if asked. Open the Render URL (not Vercel) for the live app.
 
 ## Getting Started
 

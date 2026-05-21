@@ -6,7 +6,6 @@ import {
    createUsername,
 } from "./module.js";
 
-const socket = io();
 const joinPanel = document.getElementById("join-panel");
 const joinForm = document.getElementById("join-form");
 const input = document.getElementById("username-input");
@@ -24,6 +23,23 @@ function setConnectionState(state, label) {
    if (!connectionStatus) return;
    connectionStatus.dataset.state = state;
    connectionStatus.textContent = label;
+}
+
+function showError(msg) {
+   erroMsg.style.display = "block";
+   erroMsg.textContent = msg;
+}
+
+const socket =
+   typeof io !== "undefined"
+      ? io({ transports: ["websocket", "polling"] })
+      : { connected: false, on() {}, emit() {} };
+
+if (typeof io === "undefined") {
+   setConnectionState("disconnected", "Socket.io missing");
+   showError(
+      "Realtime server not available on this host. Deploy to Render/Railway or run: npm run dev"
+   );
 }
 
 function updateOnlineBadge(count) {
@@ -106,7 +122,9 @@ socket.on("disconnect", () => {
 
 socket.on("connect_error", () => {
    setConnectionState("disconnected", "Server offline");
-   showError("Cannot reach server. Run: npm run dev");
+   showError(
+      "Cannot reach realtime server. This app needs Node + WebSockets (use Render, Railway, or npm run dev — not static Vercel)."
+   );
 });
 
 socket.on("fetch-users", (users) => {
@@ -177,9 +195,4 @@ function validation() {
       erroMsg.textContent = "";
       erroMsg.style.display = "none";
    }
-}
-
-function showError(msg) {
-   erroMsg.style.display = "block";
-   erroMsg.textContent = msg;
 }

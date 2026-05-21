@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: socket-mouse-pointer
+    runtime: node
+    plan: free
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /
+    envVars:
+      - key: NODE_VERSION
+        value: "24"
