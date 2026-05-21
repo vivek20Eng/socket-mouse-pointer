@@ -62,17 +62,30 @@ function showError(msg) {
 
 const socketOptions = { transports: ["websocket", "polling"] };
 const socketUrl = window.SOCKET_SERVER_URL || undefined;
+const isVercelHost = /\.vercel\.app$/i.test(window.location.hostname);
+const needsRenderBackend = isVercelHost && !socketUrl;
 
-const socket =
-   typeof io !== "undefined"
-      ? socketUrl
-         ? io(socketUrl, socketOptions)
-         : io(socketOptions)
-      : { connected: false, on() {}, emit() {} };
+const socketStub = { connected: false, on() {}, emit() {} };
+
+let socket;
+if (typeof io === "undefined") {
+   socket = socketStub;
+} else if (needsRenderBackend) {
+   socket = socketStub;
+} else if (socketUrl) {
+   socket = io(socketUrl, socketOptions);
+} else {
+   socket = io(socketOptions);
+}
 
 if (typeof io === "undefined") {
    setConnectionState("disconnected", "Socket.io missing");
    showError("Socket.io client failed to load. Check your network or ad blocker.");
+} else if (needsRenderBackend) {
+   setConnectionState("disconnected", "Setup required");
+   showError(
+      "Vercel only hosts the page — not the realtime server. 1) Deploy this repo on Render (Start: npm start). 2) Vercel → Settings → Environment Variables → SOCKET_SERVER_URL = your Render URL. 3) Redeploy Vercel."
+   );
 } else if (socketUrl) {
    setConnectionState("connecting", "Connecting to server…");
 }
@@ -161,8 +174,12 @@ socket.on("connect_error", () => {
       showError(
          `Cannot reach server at ${socketUrl}. Check Render is running and CORS_ORIGIN includes this site.`
       );
+   } else if (isVercelHost) {
+      showError(
+         "Add SOCKET_SERVER_URL in Vercel (your Render URL), then Redeploy. Or use the Render URL directly instead of Vercel."
+      );
    } else {
-      showError("Cannot reach server. Run: npm run dev (local) or deploy backend to Render.");
+      showError("Cannot reach server. Run: npm run dev on your PC.");
    }
 });
 
