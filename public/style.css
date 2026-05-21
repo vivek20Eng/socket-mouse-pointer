@@ -7,71 +7,207 @@
 body {
     background-color: rgb(17 17 17);
     color: white;
-    font-family: Arial, Helvetica, sans-serif;
+    font-family: "Segoe UI", Arial, Helvetica, sans-serif;
     overflow: hidden;
+    min-height: 100vh;
 }
 
-.input-container  {
-   
-    margin: 0;
+.app-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1000;
     display: flex;
-    justify-content: center;
     align-items: center;
-    flex-wrap: wrap;
-    padding: 20px;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px 20px;
+    background: rgba(17, 17, 17, 0.92);
+    backdrop-filter: blur(8px);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+    pointer-events: none;
 }
 
-.input-container input {
+.brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-weight: 600;
+    font-size: 1.05rem;
+    letter-spacing: 0.02em;
+    margin-right: auto;
+}
+
+.brand-icon {
     border-radius: 6px;
+}
+
+.connection-status {
+    font-size: 0.8rem;
+    padding: 5px 10px;
+    border-radius: 999px;
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    color: rgba(255, 255, 255, 0.7);
+}
+
+.connection-status[data-state="connected"] {
+    color: #41e9b1;
+    border-color: rgba(65, 233, 177, 0.35);
+    background: rgba(65, 233, 177, 0.1);
+}
+
+.connection-status[data-state="disconnected"] {
+    color: #ff8a8a;
+    border-color: rgba(255, 107, 107, 0.35);
+    background: rgba(255, 107, 107, 0.1);
+}
+
+.online-badge {
+    font-size: 0.85rem;
+    color: #41e9b1;
+    background: rgba(65, 233, 177, 0.12);
+    padding: 6px 12px;
+    border-radius: 999px;
+    border: 1px solid rgba(65, 233, 177, 0.25);
+}
+
+.join-panel {
+    position: fixed;
+    inset: 0;
+    z-index: 500;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 88px 24px 24px;
+    pointer-events: auto;
+}
+
+.join-panel[hidden] {
+    display: none !important;
+}
+
+.join-form {
+    width: 100%;
+    max-width: 420px;
+    padding: 28px 24px;
+    border-radius: 14px;
+    background: rgba(30, 30, 30, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.45);
+}
+
+.join-form h1 {
+    font-size: 1.5rem;
+    margin-bottom: 8px;
+}
+
+.join-subtitle {
+    color: rgba(255, 255, 255, 0.55);
+    font-size: 0.95rem;
+    margin-bottom: 20px;
+    line-height: 1.45;
+}
+
+.join-fields {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.join-fields input {
+    flex: 1 1 180px;
+    border-radius: 8px;
     color: white;
-    border: none;
-    background-color: rgb(73, 73, 73);
-    margin-right: 5px;
+    border: 2px solid rgb(73, 73, 73);
+    background-color: rgb(45, 45, 45);
+    padding: 14px 16px;
+    font-size: 17px;
     outline: none;
 }
 
-button {
-    border-radius: 6px;
+.join-fields input:focus {
+    border-color: #1765a9;
+}
+
+.join-fields button {
+    flex: 0 0 auto;
+    border-radius: 8px;
     color: white;
     border: none;
-    background: linear-gradient(45deg, #1765a9, #60f9c76b);
+    background: linear-gradient(45deg, #1765a9, #41e9b1ab);
     cursor: pointer;
-    transition: 500ms ease-in-out;
+    padding: 14px 22px;
+    font-size: 17px;
+    font-weight: 600;
 }
 
-button:hover{
-    
-    border-radius: 6px;
-    color: rgb(255, 255, 255);
-    border: none;
-    background: linear-gradient(45deg, #085292, #41e9b1ab);
-    cursor: pointer;
+.join-fields button:hover {
+    filter: brightness(1.08);
 }
 
-.input-container input,
-button {
-    padding: 20px;
-    font-size: 22px;
-   
-   
+.hint,
+.joined-hint {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 0.9rem;
+    margin-top: 16px;
+    max-width: 420px;
+    line-height: 1.5;
 }
-.error-msg{
+
+.joined-hint {
+    position: fixed;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 400;
+    padding: 10px 16px;
+    background: rgba(30, 30, 30, 0.9);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.error-msg {
     display: none;
-    color: red;
+    color: #ff6b6b;
+    font-size: 0.9rem;
+    margin-top: 12px;
 }
-.username-span{
-    background-color: rgb(5, 107, 82);
-    padding: 1px 3px;
+
+.username-span {
+    display: inline-block;
+    margin-top: 4px;
+    margin-left: 4px;
+    padding: 2px 8px;
     border-radius: 5px;
-    
+    font-size: 14px;
+    font-weight: 600;
+    color: #111;
+    white-space: nowrap;
 }
+
+.cursor-container {
+    position: absolute;
+    z-index: 100;
+    transform: translate(-4px, -4px);
+    transition: left 0.05s linear, top 0.05s linear;
+    will-change: left, top;
+    pointer-events: none;
+}
+
 @media (max-width: 500px) {
-    button,
-    input {
-        width: 100%;
+    .app-header {
+        flex-wrap: wrap;
     }
 
-    input {
-        margin-bottom: 15px;
+    .join-fields {
+        flex-direction: column;
+    }
+
+    .join-fields input,
+    .join-fields button {
+        width: 100%;
     }
 }

@@ -1,115 +1,185 @@
 "use strict";
-import { createParentContainer, createMousePointer, createUsername } from "./module.js";
+import {
+   colorFromId,
+   createParentContainer,
+   createMousePointer,
+   createUsername,
+} from "./module.js";
 
 const socket = io();
-const input = document.querySelector("input");
-const inputUser = document.querySelector(".user-container");
-let erroMsg = document.querySelector(".error-msg")
-const form = document.querySelector("form");
+const joinPanel = document.getElementById("join-panel");
+const joinForm = document.getElementById("join-form");
+const input = document.getElementById("username-input");
+const erroMsg = document.getElementById("error-msg");
+const onlineBadge = document.querySelector(".online-badge");
+const connectionStatus = document.querySelector(".connection-status");
+const joinedHint = document.getElementById("joined-hint");
 
 let currentPlayer = false;
 let userList = {};
+let lastEmit = 0;
+const THROTTLE_MS = 32;
 
+function setConnectionState(state, label) {
+   if (!connectionStatus) return;
+   connectionStatus.dataset.state = state;
+   connectionStatus.textContent = label;
+}
 
-form.addEventListener("submit", (event) => {
+function updateOnlineBadge(count) {
+   if (!onlineBadge) return;
+
+   const n = typeof count === "number" ? count : Object.keys(userList).length;
+
+   if (!currentPlayer && n === 0) {
+      onlineBadge.hidden = true;
+      return;
+   }
+
+   onlineBadge.textContent = n === 1 ? "1 user online" : `${n} users online`;
+   onlineBadge.hidden = false;
+}
+
+function showJoinPanel() {
+   currentPlayer = false;
+   joinPanel?.removeAttribute("hidden");
+   joinedHint?.setAttribute("hidden", "");
+}
+
+function hideJoinPanel() {
+   joinPanel?.setAttribute("hidden", "");
+   joinedHint?.removeAttribute("hidden");
+}
+
+function addRemoteUser(user) {
+   if (!user?.id || user.id === socket.id || userList[user.id]) return;
+
+   const color = user.color || colorFromId(user.id);
+   userList[user.id] = { ...user, color };
+
+   const parentContainer = createParentContainer(user.id, color);
+   parentContainer.appendChild(createMousePointer(color));
+   parentContainer.appendChild(createUsername(user.text, color));
+   document.body.appendChild(parentContainer);
+}
+
+function removeRemoteUser(id) {
+   document.querySelector(`[data-id='${id}']`)?.remove();
+   delete userList[id];
+}
+
+joinForm?.addEventListener("submit", (event) => {
    event.preventDefault();
 
-   if (input.value.length < 10 && input.value.length != 0) {
-    
-      const newUser = {
-         text: input.value,
-      };
-      socket.emit("new-user", newUser);
-      currentPlayer = true;
-      input.value = "";
-      document.querySelector(".input-container").remove();
+   if (!socket.connected) {
+      showError("Not connected to server. Start the app with: npm run dev");
+      return;
    }
-   else{
-    validation();
+
+   const name = input.value.trim();
+   if (name.length === 0) {
+      validation();
+      return;
+   }
+   if (name.length >= 10) {
+      validation();
+      return;
+   }
+
+   socket.emit("new-user", { text: name });
+   currentPlayer = true;
+   input.value = "";
+   hideJoinPanel();
+});
+
+socket.on("connect", () => {
+   setConnectionState("connected", "Connected");
+   if (!currentPlayer) {
+      updateOnlineBadge(0);
    }
 });
 
+socket.on("disconnect", () => {
+   setConnectionState("disconnected", "Disconnected");
+   showJoinPanel();
+});
 
-socket.on("connect", () => {
-   socket.on("fetch-users", (users) => {
-      if (Object.keys(users).length === 0) return;
-      userList = users;
-      for (const user in users) {
-         const parentContainer = createParentContainer(users[user].id);
-         const mousePointer = createMousePointer();
-         const username = createUsername(users[user].text);
-         parentContainer.appendChild(mousePointer);
-         parentContainer.appendChild(username);
-         document.body.appendChild(parentContainer);
-      }
-   });
+socket.on("connect_error", () => {
+   setConnectionState("disconnected", "Server offline");
+   showError("Cannot reach server. Run: npm run dev");
+});
+
+socket.on("fetch-users", (users) => {
+   for (const user of Object.values(users)) {
+      addRemoteUser(user);
+   }
+   updateOnlineBadge(Object.keys(users).length);
 });
 
 socket.on("new-user", (newUser) => {
-   if (userList[newUser.id]) return;
-   userList[newUser.id] = newUser;
-   const parentContainer = createParentContainer(newUser.id);
-   const mousePointer = createMousePointer();
-   const username = createUsername(newUser.text);
-   parentContainer.appendChild(mousePointer);
-   parentContainer.appendChild(username);
-
-   document.body.appendChild(parentContainer);
+   addRemoteUser(newUser);
 });
 
 socket.on("mousemove", (user) => {
-   if (userList[user.id]) {
-      const container = document.querySelector(`[data-id='${userList[user.id].id}']`);
-      container.style.left = user.coordinates.x + "px";
-      container.style.top = user.coordinates.y + "px";
-   }
+   if (!userList[user.id] || user.id === socket.id) return;
+
+   const container = document.querySelector(`[data-id='${user.id}']`);
+   if (!container) return;
+
+   container.style.left = user.coordinates.x + "px";
+   container.style.top = user.coordinates.y + "px";
 });
 
 socket.on("user-left", (user) => {
-   if (userList[user.id]) {
-      delete userList[user.id];
-   }
+   removeRemoteUser(user.id);
 });
+
+socket.on("online-count", (count) => {
+   updateOnlineBadge(count);
+});
+
+function emitPointerPosition(x, y) {
+   const now = Date.now();
+   if (now - lastEmit < THROTTLE_MS) return;
+   lastEmit = now;
+   socket.emit("mousemove", { x, y });
+}
 
 document.addEventListener("mousemove", (event) => {
-   if (currentPlayer) {
-      socket.emit("mousemmove", { x: event.clientX, y: event.clientY });
+   if (currentPlayer && socket.connected) {
+      emitPointerPosition(event.clientX, event.clientY);
    }
 });
 
+document.addEventListener(
+   "touchmove",
+   (event) => {
+      if (currentPlayer && socket.connected && event.touches[0]) {
+         event.preventDefault();
+         emitPointerPosition(event.touches[0].clientX, event.touches[0].clientY);
+      }
+   },
+   { passive: false }
+);
 
-document.addEventListener("touchmove", (event) => {
-   if (currentPlayer) {
-      socket.emit("mousemmove", { x: event.touches[0].clientX, y: event.touches[0].clientY });
-   }
-});
+input?.addEventListener("keyup", validation);
 
-input.addEventListener("keyup", () => {
-    
-    validation();
-  });
-  
 function validation() {
-    const input = document.querySelector("input");
-    if(input.value.length > 10){
-        input.style.border = "2px solid red";
-        
-        showError("Name must be lessthan 10 character")
-    }
-    else if(input.value.length ===0){
-        input.style.border = "2px solid red";
-        showError("Enter your name")
-    }
-    else{
-        input.style.border = "2px solid green";
-        erroMsg.textContent=""
-    }
-    
-  }
-  
-  function showError(msg){
-   
-    erroMsg.style.display = "block";
-    erroMsg.textContent=msg;
-  }
+   const name = input.value.trim();
+   if (name.length > 10) {
+      input.style.border = "2px solid #ff6b6b";
+      showError("Name must be less than 10 characters");
+   } else if (name.length === 0) {
+      input.style.border = "2px solid #ff6b6b";
+      showError("Enter your name");
+   } else {
+      input.style.border = "2px solid #41e9b1";
+      erroMsg.textContent = "";
+      erroMsg.style.display = "none";
+   }
+}
 
+function showError(msg) {
+   erroMsg.style.display = "block";
+   erroMsg.textContent = msg;
+}

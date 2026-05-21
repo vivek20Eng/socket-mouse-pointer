@@ -5,29 +5,42 @@
    <meta charset="UTF-8" />
    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-   <title>vivek Live</title>
+   <meta name="description" content="See everyone's mouse pointers move in real time. Join with a name and collaborate live." />
+   <meta name="theme-color" content="#111111" />
+   <title>Live Cursors</title>
+   <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
+   <link rel="apple-touch-icon" href="/favicon.svg" />
    <link rel="stylesheet" href="./style.css" />
    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
-
 </head>
 
 <body>
-   <form class="input-container">
-   
-      <div class="user-container">
-         <input type="text" />
-         <button>Add UserName</button>
-         
+   <header class="app-header">
+      <div class="brand">
+         <img src="/favicon.svg" alt="" width="28" height="28" class="brand-icon" />
+         <span>Live Cursors</span>
       </div>
-    
-      
-   </form>
-  <center class="error-msg"> <p class="">invalid credentials</p></center>
-    </br>
-   <canvas></canvas>
+      <span class="connection-status" data-state="connecting">Connecting…</span>
+      <span class="online-badge" hidden aria-live="polite">0 users online</span>
+   </header>
+
+   <main class="join-panel" id="join-panel">
+      <form class="join-form" id="join-form">
+         <h1>Join the room</h1>
+         <p class="join-subtitle">Enter a name, then move your mouse — others will see your pointer.</p>
+         <div class="join-fields">
+            <input type="text" id="username-input" placeholder="Your name (max 10 chars)" maxlength="10"
+               autocomplete="nickname" required />
+            <button type="submit">Join room</button>
+         </div>
+         <p class="error-msg" id="error-msg" role="alert"></p>
+      </form>
+      <p class="hint">Tip: open this page in two tabs to test live cursors.</p>
+   </main>
+
+   <p class="joined-hint" id="joined-hint" hidden>You're in — move your mouse. Open another tab to see other cursors.</p>
 
    <script src="/socket.io/socket.io.js"></script>
-   <script type="module" src="./module.js"></script>
    <script type="module" src="./index.js"></script>
 </body>
 

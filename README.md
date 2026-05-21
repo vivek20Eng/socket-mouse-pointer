@@ -57,7 +57,7 @@ To get started with the development of the Real-Time Collaborative Mouse Pointer
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/Viveksz/Resume-Builder.git
+   git clone https://github.com/vivek20Eng/socket-mouse-pointer.git
    ```
 2. Install dependencies:
     ```bash 
@@ -66,5 +66,5 @@ To get started with the development of the Real-Time Collaborative Mouse Pointer
     ```
 3. Start the development server:
     ```bash 
-    npm start
+    npm run dev
     ```

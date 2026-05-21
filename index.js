@@ -15,41 +15,62 @@ app.get("/", (req, res) => {
 
 const users = {};
 
+function userColor(id) {
+  let hash = 0;
+  for (let i = 0; i < id.length; i++) {
+    hash = id.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  const hue = Math.abs(hash) % 360;
+  return `hsl(${hue}, 72%, 58%)`;
+}
+
+function broadcastOnlineCount() {
+  io.emit("online-count", Object.keys(users).length);
+}
+
 io.on("connection", (socket) => {
   console.log("User Connected:", socket.id);
 
-  // Send existing users to new client
   socket.emit("fetch-users", users);
+  socket.emit("online-count", Object.keys(users).length);
 
-  // New user joined
   socket.on("new-user", (data) => {
+    const text = String(data?.text ?? "")
+      .trim()
+      .slice(0, 10);
+
+    if (!text || users[socket.id]) return;
+
     const newUser = {
       id: socket.id,
-      text: data.text,
+      text,
+      color: userColor(socket.id),
     };
 
     users[socket.id] = newUser;
 
     io.emit("new-user", newUser);
+    broadcastOnlineCount();
   });
 
-  // Mouse movement
   socket.on("mousemove", (coordinates) => {
-    io.emit("mousemove", {
+    if (!users[socket.id]) return;
+
+    socket.broadcast.emit("mousemove", {
       id: socket.id,
       coordinates,
     });
   });
 
-  // User disconnected
   socket.on("disconnect", () => {
     console.log("User Disconnected:", socket.id);
 
+    if (!users[socket.id]) return;
+
     delete users[socket.id];
 
-    io.emit("user-left", {
-      id: socket.id,
-    });
+    io.emit("user-left", { id: socket.id });
+    broadcastOnlineCount();
   });
 });
 
